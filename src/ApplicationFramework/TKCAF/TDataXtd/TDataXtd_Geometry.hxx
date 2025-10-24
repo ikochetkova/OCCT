@@ -111,6 +111,12 @@ public:
   Standard_EXPORT static Standard_Boolean Cylinder(const Handle(TNaming_NamedShape)& S,
                                                    gp_Cylinder&                      G);
 
+  //! Returns the placement attribute defined by the label L and the placement G.
+  Standard_EXPORT static Standard_Boolean Placement(const TDF_Label& L, gp_Ax3& G);
+
+  //! Returns the placement attribute defined by the label L and the placement G.
+  Standard_EXPORT static Standard_Boolean Placement(const TDF_Label& L, gp_Ax2& G);
+
   //! Returns the GUID for geometry attributes.
   Standard_EXPORT static const Standard_GUID& GetID();
 

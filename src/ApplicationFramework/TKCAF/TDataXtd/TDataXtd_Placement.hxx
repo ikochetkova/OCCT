@@ -36,6 +36,12 @@ public:
   //! =================
   Standard_EXPORT static Handle(TDataXtd_Placement) Set(const TDF_Label& label);
 
+  Standard_EXPORT static Handle(TDataXtd_Placement) Set(const TDF_Label& label,
+                                                        const gp_Ax3&    theCS);
+
+  Standard_EXPORT static Handle(TDataXtd_Placement) Set(const TDF_Label& label,
+                                                        const gp_Ax2&    theCS);
+
   Standard_EXPORT TDataXtd_Placement();
 
   Standard_EXPORT const Standard_GUID& ID() const Standard_OVERRIDE;

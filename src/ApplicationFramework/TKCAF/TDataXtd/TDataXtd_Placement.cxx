@@ -13,12 +13,17 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
+#include <BRepBuilderAPI_MakeVertex.hxx>
 #include <Standard_GUID.hxx>
 #include <Standard_Type.hxx>
+#include <TDataStd_RealArray.hxx>
 #include <TDataXtd_Placement.hxx>
 #include <TDF_Attribute.hxx>
 #include <TDF_Label.hxx>
 #include <TDF_RelocationTable.hxx>
+#include <TNaming_Builder.hxx>
+#include <TNaming_NamedShape.hxx>
+#include <TopoDS.hxx>
 
 IMPLEMENT_DERIVED_ATTRIBUTE(TDataXtd_Placement, TDataStd_GenericEmpty)
 
@@ -41,6 +46,39 @@ Handle(TDataXtd_Placement) TDataXtd_Placement::Set(const TDF_Label& L)
     L.AddAttribute(A);
   }
   return A;
+}
+
+//=================================================================================================
+
+Handle(TDataXtd_Placement) TDataXtd_Placement::Set(const TDF_Label& theL, const gp_Ax3& theCS)
+{
+  Handle(TDataXtd_Placement) theAttr = Set(theL);
+
+  gp_Pnt          aLocPoint = theCS.Location();
+  TNaming_Builder B(theL);
+  B.Generated(BRepBuilderAPI_MakeVertex(aLocPoint));
+
+  Handle(TColStd_HArray1OfReal) aCSArr = new TColStd_HArray1OfReal(1, 9);
+  for (Standard_Integer i = 1; i <= 3; i++)
+  {
+    aCSArr->SetValue(i, theCS.Direction().Coord(i));
+    aCSArr->SetValue(i + 3, theCS.XDirection().Coord(i));
+    aCSArr->SetValue(i + 6, theCS.YDirection().Coord(i));
+  }
+
+  Handle(TDataStd_RealArray) aLoc = TDataStd_RealArray::Set(theL, 1, 9);
+  if (!aLoc.IsNull())
+    aLoc->ChangeArray(aCSArr);
+
+  return theAttr;
+}
+
+//=================================================================================================
+
+Handle(TDataXtd_Placement) TDataXtd_Placement::Set(const TDF_Label& L, const gp_Ax2& theCS)
+{
+  gp_Ax3 aCS(theCS.Location(), theCS.Direction(), theCS.XDirection());
+  return Set(L, aCS);
 }
 
 //=================================================================================================
