@@ -35,6 +35,7 @@ class XCAFDoc_MaterialTool;
 class XCAFDoc_NotesTool;
 class XCAFDoc_ViewTool;
 class XCAFDoc_VisMaterialTool;
+class XCAFDoc_SupGeomTool;
 
 class XCAFDoc_DocumentTool;
 DEFINE_STANDARD_HANDLE(XCAFDoc_DocumentTool, TDataStd_GenericEmpty)
@@ -91,6 +92,9 @@ public:
 
   //! Returns sub-label of DocLabel() with tag 10.
   Standard_EXPORT static TDF_Label VisMaterialLabel(const TDF_Label& theLabel);
+
+  //! Returns sub-label of DocLabel() with tag 20.
+  Standard_EXPORT static TDF_Label SupGeomLabel(const TDF_Label& acces);
 
   //! Creates (if it does not exist) ShapeTool attribute on ShapesLabel().
   Standard_EXPORT static Handle(XCAFDoc_ShapeTool) ShapeTool(const TDF_Label& acces);
@@ -156,6 +160,13 @@ public:
   //! Checks for the NotesTool attribute on the label's document
   //! Returns TRUE if Tool exists, ELSE if it has not been created
   Standard_EXPORT static Standard_Boolean CheckNotesTool(const TDF_Label& theAcces);
+
+  //! Creates (if it does not exist) SupGeomTool attribute on SupGeomLabel().
+  Standard_EXPORT static Handle(XCAFDoc_SupGeomTool) SupGeomTool(const TDF_Label& acces);
+
+  //! Checks for the SupGeomTool attribute on the label's document
+  //! Returns TRUE if Tool exists, ELSE if it has not been created
+  Standard_EXPORT static Standard_Boolean CheckSupGeomTool(const TDF_Label& theAcces);
 
   //! Returns value of current internal unit for the document
   //! converted to base unit type.

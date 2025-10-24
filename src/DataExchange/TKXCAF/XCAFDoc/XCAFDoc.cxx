@@ -238,6 +238,23 @@ const Standard_GUID& XCAFDoc::ViewRefAnnotationGUID()
   return ID;
 }
 
+//==================================================================================================
+
+const Standard_GUID& XCAFDoc::SupplementalRefShapeGUID()
+{
+  static const Standard_GUID ID("85a1b8d7-0936-4e8b-a953-a8bd7731411a");
+  return ID;
+}
+
+//==================================================================================================
+
+
+const Standard_GUID& XCAFDoc::SupplementalRefPMIGUID()
+{
+  static const Standard_GUID ID("91b98f8b-1c98-49a8-a3f1-db0158eef7fd");
+  return ID;
+}
+
 //=================================================================================================
 
 const Standard_GUID& XCAFDoc::LockGUID()

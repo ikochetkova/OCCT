@@ -16,6 +16,7 @@
 #include <STEPCAFControl_Reader.hxx>
 
 #include <BRep_Builder.hxx>
+#include <BRepBuilderAPI_MakeVertex.hxx>
 #include <Geom_Axis2Placement.hxx>
 #include <Geom_CartesianPoint.hxx>
 #include <Geom_Plane.hxx>
@@ -97,6 +98,7 @@
 #include <StepDimTol_GeometricToleranceWithMaximumTolerance.hxx>
 #include <StepGeom_Plane.hxx>
 #include <StepDimTol_PlacedDatumTargetFeature.hxx>
+#include <StepRepr_ConstructiveGeometryRepresentationRelationship.hxx>
 #include <StepRepr_DerivedShapeAspect.hxx>
 #include <StepRepr_DescriptiveRepresentationItem.hxx>
 #include <StepRepr_MappedItem.hxx>
@@ -180,6 +182,7 @@
 #include <TColStd_SequenceOfHAsciiString.hxx>
 #include <TDataStd_Name.hxx>
 #include <TDataStd_TreeNode.hxx>
+#include <TDataXtd_Placement.hxx>
 #include <TDF_Label.hxx>
 #include <TDF_Tool.hxx>
 #include <TDocStd_Document.hxx>
@@ -207,6 +210,7 @@
 #include <XCAFDoc_LayerTool.hxx>
 #include <XCAFDoc_MaterialTool.hxx>
 #include <XCAFDoc_ShapeTool.hxx>
+#include <XCAFDoc_SupGeomTool.hxx>
 #include <XCAFDoc_View.hxx>
 #include <XCAFDoc_ViewTool.hxx>
 #include <XCAFDoc_Volume.hxx>
@@ -288,7 +292,8 @@ STEPCAFControl_Reader::STEPCAFControl_Reader()
       mySHUOMode(Standard_False),
       myGDTMode(Standard_True),
       myMatMode(Standard_True),
-      myViewMode(Standard_True)
+      myViewMode(Standard_True),
+      mySupplementalMode(Standard_True)
 {
   STEPCAFControl_Controller::Init();
   if (!myReader.WS().IsNull())
@@ -310,7 +315,8 @@ STEPCAFControl_Reader::STEPCAFControl_Reader(const Handle(XSControl_WorkSession)
       mySHUOMode(Standard_False),
       myGDTMode(Standard_True),
       myMatMode(Standard_True),
-      myViewMode(Standard_True)
+      myViewMode(Standard_True),
+      mySupplementalMode(Standard_True)
 {
   STEPCAFControl_Controller::Init();
   Init(WS, scratch);
@@ -755,6 +761,10 @@ Standard_Boolean STEPCAFControl_Reader::Transfer(STEPControl_Reader&            
   // read View entities from STEP model
   if (GetViewMode())
     ReadViews(reader.WS(), doc, aLocalFactors);
+
+  // read Supplemental geometry entities from STEP model
+  if (GetSupplementalMode())
+    ReadSupplemental(reader.WS(), doc, aLocalFactors);
 
   // read metadata
   if (GetMetaMode())
@@ -3950,6 +3960,195 @@ TDF_Label STEPCAFControl_Reader::createGDTObjectInXCAF(const Handle(Standard_Tra
   return aGDTL;
 }
 
+// //==================================================================================================
+
+// Standard_Boolean STEPCAFControl_Reader::findReferenceGeometry(
+//   const Handle(Standard_Transient)& theShapeStart,
+//   const Handle(XCAFDoc_ShapeTool)&  theShTool,
+//   TDF_LabelSequence&                theShLabelSeq,
+//   const StepData_Factors&           theLocalFactors)
+// {
+//   const Handle(XSControl_TransferReader)&  aTransferReader   = myReader.WS()->TransferReader();
+//   const Handle(Transfer_TransientProcess)& aTransientProcess = aTransferReader->TransientProcess();
+//   TopoDS_Shape aShape = TransferBRep::ShapeResult(aTransientProcess, theShapeStart);
+//   if (!aShape.IsNull())
+//   {
+//     TDF_Label aShapeLabel;
+//     theShTool->Search(aShape, aShapeLabel, Standard_True, Standard_True, Standard_True);
+//     if (aShapeLabel.IsNull() && aShape.ShapeType() == TopAbs_WIRE)
+//     {
+//       for (TopExp_Explorer anExp(aShape, TopAbs_EDGE, TopAbs_SHAPE); anExp.More(); anExp.Next())
+//       {
+//         TDF_Label anEdgeLabel;
+//         theShTool->Search(anExp.Current(),
+//                           anEdgeLabel,
+//                           Standard_True,
+//                           Standard_True,
+//                           Standard_True);
+//         if (!anEdgeLabel.IsNull())
+//         {
+//           theShLabelSeq.Append(anEdgeLabel);
+//         }
+//       }
+//     }
+//     if (!aShapeLabel.IsNull())
+//     {
+//       theShLabelSeq.Append(aShapeLabel);
+//       return Standard_True;
+//     }
+//   }
+
+//   TDF_Label aFindResultL;
+//   if (myGDTMap.Find(theShapeStart, aFindResultL))
+//   {
+//     theShLabelSeq.Append(aFindResultL);
+//     return Standard_True;
+//   }
+
+//   const Handle(StepGeom_GeometricRepresentationItem)& aGeomItem =
+//     Handle(StepGeom_GeometricRepresentationItem)::DownCast(theShapeStart);
+//   if (aGeomItem.IsNull())
+//   {
+//     return Standard_False;
+//   }
+
+//   if (theShapeStart->IsKind(STANDARD_TYPE(StepGeom_Curve)))
+//   {
+//     const Handle(StepGeom_Curve)& aStepCurve = Handle(StepGeom_Curve)::DownCast(theShapeStart);
+//     Handle(Geom_Curve)            aCurve     = StepToGeom::MakeCurve(aStepCurve, theLocalFactors);
+//     if (aCurve.IsNull())
+//     {
+//       return Standard_False;
+//     }
+
+//     BRepBuilderAPI_MakeEdge aMaker;
+//     if (aCurve->IsKind(STANDARD_TYPE(Geom_Line)))
+//     {
+//       const Standard_Real aScale = theLocalFactors.LengthFactor();
+//       aMaker.Init(aCurve, 0, 1. * aScale);
+//     }
+//     else
+//     {
+//       aMaker.Init(aCurve);
+//     }
+//     if (aMaker.IsDone())
+//     {
+//       aShape = aMaker.Shape();
+//     }
+//   }
+//   else if (theShapeStart->IsKind(STANDARD_TYPE(StepGeom_Surface)))
+//   {
+//     const Handle(StepGeom_Surface)& aStepSurface =
+//       Handle(StepGeom_Surface)::DownCast(theShapeStart);
+//     Handle(Geom_Surface) aSurface = StepToGeom::MakeSurface(aStepSurface, theLocalFactors);
+//     if (aSurface.IsNull())
+//     {
+//       return Standard_False;
+//     }
+//     BRepBuilderAPI_MakeFace aMaker;
+//     if (aSurface->IsKind(STANDARD_TYPE(Geom_Plane)))
+//     {
+//       const Standard_Real aScale = theLocalFactors.LengthFactor();
+//       aMaker.Init(aSurface, 0., 1. * aScale, 0., 1. * aScale, Precision::Confusion());
+//     }
+//     else
+//     {
+//       aMaker.Init(aSurface, Standard_True, Precision::Confusion());
+//     }
+//     if (aMaker.IsDone())
+//     {
+//       aShape = aMaker.Shape();
+//     }
+//   }
+//   if (aShape.IsNull())
+//   {
+//     return Standard_False;
+//   }
+
+//   if (mySupplementalLabel.IsNull())
+//   {
+//     createSupplementalLabel(theShTool);
+//   }
+//   TDF_Label aSupGeomLabel = theShTool->AddComponent(mySupplementalLabel, aShape);
+//   if (aSupGeomLabel.IsNull())
+//   {
+//     return Standard_False;
+//   }
+
+//   TDataStd_UAttribute::Set(aSupGeomLabel, XCAFDoc::SupplementalGeometryGUID());
+
+//   if (!aGeomItem->Name().IsNull())
+//   {
+//     TDataStd_Name::Set(aSupGeomLabel, aGeomItem->Name()->String());
+//     TDF_Label aReferredShapeL;
+//     theShTool->GetReferredShape(aSupGeomLabel, aReferredShapeL);
+//     TDataStd_Name::Set(aReferredShapeL, aGeomItem->Name()->String());
+//     TDataStd_UAttribute::Set(aReferredShapeL, XCAFDoc::SupplementalGeometryGUID());
+//   }
+//   TDF_Label              aRefLabel;
+//   const Interface_Graph& aGraph = aTransientProcess->Graph();
+//   for (Interface_EntityIterator anIter(aGraph.Sharings(theShapeStart));
+//        anIter.More() && aRefLabel.IsNull();
+//        anIter.Next())
+//   {
+//     Handle(StepAP242_GeometricItemSpecificUsage) aPGISU =
+//       Handle(StepAP242_GeometricItemSpecificUsage)::DownCast(anIter.Value());
+//     if (aPGISU.IsNull())
+//     {
+//       continue;
+//     }
+//     Handle(StepRepr_ShapeAspect) aShAspect = aPGISU->Definition().ShapeAspect();
+//     if (aShAspect.IsNull())
+//     {
+//       continue;
+//     }
+//     Handle(StepRepr_ProductDefinitionShape) aRefPDS = aShAspect->OfShape();
+//     if (aRefPDS.IsNull())
+//     {
+//       continue;
+//     }
+//     const TopoDS_Shape aRefShape =
+//       TransferBRep::ShapeResult(aTransientProcess, aRefPDS->Definition().Value());
+//     theShTool->Search(aRefShape, aRefLabel, Standard_True, Standard_True, Standard_False);
+//   }
+
+//   if (aRefLabel.IsNull())
+//   {
+//     TDF_LabelSequence aFreeShapes;
+//     theShTool->GetFreeShapes(aFreeShapes);
+//     for (TDF_LabelSequence::Iterator anIter(aFreeShapes); anIter.More() && aRefLabel.IsNull();
+//          anIter.Next())
+//     {
+//       const TDF_Label             aLabel = anIter.Value();
+//       Handle(TDataStd_UAttribute) aSupGeomAttr;
+//       if (aLabel.FindAttribute(XCAFDoc::SupplementalContainerGUID(), aSupGeomAttr))
+//       {
+//         continue;
+//       }
+//       TopoDS_Shape aTmpShape = theShTool->GetShape(aLabel);
+//       if (!aTmpShape.IsNull())
+//       {
+//         aRefLabel = aLabel;
+//       }
+//     }
+//   }
+//   if (aRefLabel.IsNull())
+//   {
+//     return Standard_False;
+//   }
+
+//   // set reference
+//   Handle(TDataStd_TreeNode) aMainNode =
+//     TDataStd_TreeNode::Set(aRefLabel, XCAFDoc::SupplementalRefGUID());
+//   Handle(TDataStd_TreeNode) aRefNode =
+//     TDataStd_TreeNode::Set(aSupGeomLabel, XCAFDoc::SupplementalRefGUID());
+//   aRefNode->Remove(); // abv: fix against bug in TreeNode::Append()
+//   aMainNode->Append(aRefNode);
+//   myGDTMap.Bind(theShapeStart, aSupGeomLabel);
+//   theShLabelSeq.Append(aSupGeomLabel);
+//   return Standard_True;
+// }
+
 //=================================================================================================
 
 void convertAngleValue(const STEPConstruct_UnitContext& anUnitCtx, Standard_Real& aVal)
@@ -5360,6 +5559,115 @@ Standard_Boolean STEPCAFControl_Reader::ReadViews(const Handle(XSControl_WorkSes
 
 //=================================================================================================
 
+Standard_Boolean STEPCAFControl_Reader::ReadSupplemental(const Handle(XSControl_WorkSession)& theWS,
+                                                         const Handle(TDocStd_Document)& theDoc,
+                                                         const StepData_Factors& theLocalFactors)
+{
+  const Handle(Interface_InterfaceModel)&  aModel            = theWS->Model();
+  const Handle(XSControl_TransferReader)&  aTransferReader   = myReader.WS()->TransferReader();
+  const Handle(Transfer_TransientProcess)& aTransientProcess = aTransferReader->TransientProcess();
+  const Interface_Graph&                   aGraph            = aTransientProcess->Graph();
+  Handle(XCAFDoc_ShapeTool)                aSTool = XCAFDoc_DocumentTool::ShapeTool(theDoc->Main());
+  Handle(XCAFDoc_SupGeomTool) aSupGeomTool = XCAFDoc_DocumentTool::SupGeomTool(theDoc->Main());
+
+  Standard_Integer aNb = aModel->NbEntities();
+  for (Standard_Integer i = 1; i <= aNb; i++)
+  {
+    // Find the entry point of the supplemental data
+    Handle(Standard_Transient) anEnt = aModel->Value(i);
+    if (!anEnt->IsKind(STANDARD_TYPE(StepRepr_ConstructiveGeometryRepresentationRelationship)))
+      continue;
+    Handle(StepRepr_ConstructiveGeometryRepresentationRelationship) aCGRR =
+      Handle(StepRepr_ConstructiveGeometryRepresentationRelationship)::DownCast(anEnt);
+    Handle(StepRepr_Representation) aMainRepr = aCGRR->Rep1();
+    if (aMainRepr.IsNull())
+      continue;
+    Handle(StepRepr_Representation) aSupRepr = aCGRR->Rep2();
+    if (aSupRepr.IsNull())
+      continue;
+
+    // Iterate through the supplemental representation items
+    for (StepRepr_HArray1OfRepresentationItem::Iterator anIter(aSupRepr->Items()->Array1());
+         anIter.More();
+         anIter.Next())
+    {
+      const Handle(StepRepr_RepresentationItem)& anItem = anIter.Value();
+      if (anItem.IsNull())
+        continue;
+
+      // Find PMI references
+      Interface_EntityIterator aGISUIter         = aGraph.Sharings(anIter.Value());
+      NCollection_Sequence<Handle(StepAP242_GeometricItemSpecificUsage)> aGISUList;
+      for (; aGISUIter.More(); aGISUIter.Next())
+      {
+        if (aGISUIter.Value()->IsKind(STANDARD_TYPE(StepAP242_GeometricItemSpecificUsage)))
+        {
+          aGISUList.Append(
+            Handle(StepAP242_GeometricItemSpecificUsage)::DownCast(aGISUIter.Value()));
+        }
+      }
+
+      // Now only Axis2Placement3d is supported
+      TDF_Label aSupGeomItemL;
+      if (anItem->IsKind(STANDARD_TYPE(StepGeom_Axis2Placement3d)))
+      {
+        // Create a coordinate system from the STEP entity
+        Handle(StepGeom_Axis2Placement3d) anAxis2Placement =
+          Handle(StepGeom_Axis2Placement3d)::DownCast(anItem);
+        Handle(Geom_Axis2Placement) anAxis =
+          StepToGeom::MakeAxis2Placement(anAxis2Placement, theLocalFactors);
+
+        // Add created geometry to the supplemental data
+        if (!anAxis.IsNull())
+        {
+          TCollection_AsciiString aSupName("Axis");
+          if (!anAxis2Placement->Name().IsNull())
+          {
+            aSupName = anAxis2Placement->Name()->String();
+          }
+          aSupGeomItemL = aSupGeomTool->AddSupGeomItem(anAxis->Ax2(), aSupName);
+        }
+        else
+          continue;
+
+        // set references to main shapes if exist
+        for (int itemIt = 1; itemIt <= aMainRepr->NbItems(); itemIt++)
+        {
+          Handle(StepRepr_RepresentationItem) aMainItem = aMainRepr->ItemsValue(itemIt);
+          if (aMainItem.IsNull())
+            continue;
+          // Get the shape corresponding to the main representation item
+          TopoDS_Shape aShape = TransferBRep::ShapeResult(aTransientProcess, aMainItem);
+          TDF_Label    aShapeLabel;
+          if (!aShape.IsNull())
+          {
+            aSTool->Search(aShape, aShapeLabel, Standard_True, Standard_True, Standard_True);
+          }
+          if (!aShapeLabel.IsNull())
+          {
+            aSupGeomTool->AddShapeReference(aSupGeomItemL, aShapeLabel);
+          }
+        }
+        // set PMI references if exist
+        for (Standard_Integer aGISUIt = 1; aGISUIt <= aGISUList.Length(); aGISUIt++)
+        {
+          Handle(StepAP242_GeometricItemSpecificUsage) aGISU = aGISUList.Value(aGISUIt);
+          if (aGISU.IsNull())
+            continue;
+          TDF_Label aPMILabel;
+          if (myGDTMap.Find(aGISU->Definition().Member(), aPMILabel))
+          {
+            aSupGeomTool->AddPMIReference(aSupGeomItemL, aPMILabel);
+          }
+        }
+      }
+    }
+  }
+  return Standard_True;
+}
+
+//=================================================================================================
+
 TDF_Label STEPCAFControl_Reader::SettleShapeData(const Handle(StepRepr_RepresentationItem)& theItem,
                                                  const TDF_Label&                           theLab,
                                                  const Handle(XCAFDoc_ShapeTool)& theShapeTool,
@@ -5770,6 +6078,20 @@ void STEPCAFControl_Reader::SetViewMode(const Standard_Boolean viewmode)
 Standard_Boolean STEPCAFControl_Reader::GetViewMode() const
 {
   return myViewMode;
+}
+
+//=================================================================================================
+
+void STEPCAFControl_Reader::SetSupplementalMode(const Standard_Boolean theMode)
+{
+  mySupplementalMode = theMode;
+}
+
+//=================================================================================================
+
+Standard_Boolean STEPCAFControl_Reader::GetSupplementalMode() const
+{
+  return mySupplementalMode;
 }
 
 //=============================================================================

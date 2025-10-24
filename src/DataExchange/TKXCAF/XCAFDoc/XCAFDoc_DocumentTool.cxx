@@ -31,6 +31,7 @@
 #include <XCAFDoc_MaterialTool.hxx>
 #include <XCAFDoc_NotesTool.hxx>
 #include <XCAFDoc_ShapeTool.hxx>
+#include <XCAFDoc_SupGeomTool.hxx>
 #include <XCAFDoc_ViewTool.hxx>
 #include <XCAFDoc_VisMaterialTool.hxx>
 #include <UnitsMethods.hxx>
@@ -87,6 +88,7 @@ Handle(XCAFDoc_DocumentTool) XCAFDoc_DocumentTool::Set(const TDF_Label&       L,
     XCAFDoc_NotesTool::Set(NotesLabel(L));
     XCAFDoc_ViewTool::Set(ViewsLabel(L));
     XCAFDoc_ClippingPlaneTool::Set(ClippingPlanesLabel(L));
+    XCAFDoc_SupGeomTool::Set(SupGeomLabel(L));
   }
   return A;
 }
@@ -193,6 +195,15 @@ TDF_Label XCAFDoc_DocumentTool::VisMaterialLabel(const TDF_Label& theLabel)
   TDF_Label aLabel = DocLabel(theLabel).FindChild(10, Standard_True);
   TDataStd_Name::Set(aLabel, "VisMaterials");
   return aLabel;
+}
+
+//=================================================================================================
+
+TDF_Label XCAFDoc_DocumentTool::SupGeomLabel(const TDF_Label& acces)
+{
+  TDF_Label L = DocLabel(acces).FindChild(20, Standard_True);
+  TDataStd_Name::Set(L, "Supplemental Geometry");
+  return L;
 }
 
 //=================================================================================================
@@ -364,6 +375,25 @@ Standard_Boolean XCAFDoc_DocumentTool::CheckNotesTool(const TDF_Label& theAcces)
     return Standard_False;
   }
   return aLabel.IsAttribute(XCAFDoc_NotesTool::GetID());
+}
+
+//=================================================================================================
+
+Handle(XCAFDoc_SupGeomTool) XCAFDoc_DocumentTool::SupGeomTool(const TDF_Label& acces)
+{
+  return XCAFDoc_SupGeomTool::Set(SupGeomLabel(acces));
+}
+
+//=================================================================================================
+
+Standard_Boolean XCAFDoc_DocumentTool::CheckSupGeomTool(const TDF_Label& theAcces)
+{
+  TDF_Label aLabel = DocLabel(theAcces).FindChild(20, Standard_False);
+  if (aLabel.IsNull())
+  {
+    return Standard_False;
+  }
+  return aLabel.IsAttribute(XCAFDoc_SupGeomTool::GetID());
 }
 
 //=================================================================================================

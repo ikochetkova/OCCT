@@ -223,6 +223,12 @@ public:
   //! Get View mode
   Standard_EXPORT Standard_Boolean GetViewMode() const;
 
+  //! Set Supplemental geometry mode to indicate read Supplemental geometry or not.
+  Standard_EXPORT void SetSupplementalMode(const Standard_Boolean theMode);
+
+  //! Get Supplemental geometry mode
+  Standard_EXPORT Standard_Boolean GetSupplementalMode() const;
+
   const XCAFDoc_DataMapOfShapeLabel& GetShapeLabelMap() const { return myMap; }
 
   //! Sets parameters for shape processing.
@@ -357,6 +363,12 @@ protected:
     ReadViews(const Handle(XSControl_WorkSession)& theWS,
               const Handle(TDocStd_Document)&      theDoc,
               const StepData_Factors&              theLocalFactors = StepData_Factors()) const;
+
+  //! Reads Supplemental geometry for instances defined in the STEP model
+  Standard_EXPORT Standard_Boolean
+    ReadSupplemental(const Handle(XSControl_WorkSession)& theWS,
+                     const Handle(TDocStd_Document)&      theDoc,
+                     const StepData_Factors&              theLocalFactors = StepData_Factors());
 
   //! Populates the sub-Label of the passed TDF Label with shape
   //! data associated with the given STEP Representation Item,
@@ -514,6 +526,7 @@ private:
   Standard_Boolean                                                                myGDTMode;
   Standard_Boolean                                                                myMatMode;
   Standard_Boolean                                                                myViewMode;
+  Standard_Boolean                                                                mySupplementalMode;
   NCollection_DataMap<Handle(Standard_Transient), TDF_Label>                      myGDTMap;
 };
 

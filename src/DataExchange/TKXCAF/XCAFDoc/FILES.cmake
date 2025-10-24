@@ -70,6 +70,8 @@ set(OCCT_XCAFDoc_FILES
   XCAFDoc_ShapeMapTool.hxx
   XCAFDoc_ShapeTool.cxx
   XCAFDoc_ShapeTool.hxx
+  XCAFDoc_SupGeomTool.cxx
+  XCAFDoc_SupGeomTool.hxx
   XCAFDoc_View.cxx
   XCAFDoc_View.hxx
   XCAFDoc_ViewTool.cxx

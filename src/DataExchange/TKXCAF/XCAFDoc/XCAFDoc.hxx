@@ -108,6 +108,12 @@ public:
   Standard_EXPORT static const Standard_GUID& ViewRefNoteGUID();
   Standard_EXPORT static const Standard_GUID& ViewRefAnnotationGUID();
 
+  //! Returns GUID for TreeNode representing reference for supplemental geometry and Shape
+  Standard_EXPORT static const Standard_GUID& SupplementalRefShapeGUID();
+
+  //! Returns GUID for TreeNode representing reference for supplemental geometry and PMI
+  Standard_EXPORT static const Standard_GUID& SupplementalRefPMIGUID();
+
   //! Returns GUID for UAttribute identifying lock flag
   Standard_EXPORT static const Standard_GUID& LockGUID();
 
