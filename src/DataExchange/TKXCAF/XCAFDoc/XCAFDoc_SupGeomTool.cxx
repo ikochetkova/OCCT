@@ -13,6 +13,11 @@
 
 #include <XCAFDoc_SupGeomTool.hxx>
 
+#include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRepBuilderAPI_MakeFace.hxx>
+#include <BRepBuilderAPI_MakeVertex.hxx>
+#include <Geom_Curve.hxx>
+#include <Geom_Surface.hxx>
 #include <gp_Ax2.hxx>
 #include <gp_Ax3.hxx>
 #include <TCollection_ExtendedString.hxx>
@@ -21,6 +26,7 @@
 #include <TDataXtd_Placement.hxx>
 #include <TDF_ChildIterator.hxx>
 #include <TDF_LabelSequence.hxx>
+#include <TNaming_Builder.hxx>
 #include <TNaming_NamedShape.hxx>
 #include <XCAFDoc.hxx>
 
@@ -93,6 +99,67 @@ TDF_Label XCAFDoc_SupGeomTool::AddSupGeomItem(const gp_Ax3&                     
 {
   TDF_Label aNewLabel = Label().NewChild();
   TDataXtd_Placement::Set(aNewLabel, theAx3);
+  if (!theName.IsEmpty())
+  {
+    TDataStd_Name::Set(aNewLabel, theName);
+  }
+  return aNewLabel;
+}
+
+//=================================================================================================
+
+TDF_Label XCAFDoc_SupGeomTool::AddSupGeomItem(const gp_Pnt&                     thePnt,
+                                              const TCollection_ExtendedString& theName)
+{
+  TDF_Label aNewLabel = Label().NewChild();
+  TNaming_Builder aB(aNewLabel);
+  aB.Generated(BRepBuilderAPI_MakeVertex(thePnt));
+  if (!theName.IsEmpty())
+  {
+    TDataStd_Name::Set(aNewLabel, theName);
+  }
+  return aNewLabel;
+}
+
+//=================================================================================================
+
+TDF_Label XCAFDoc_SupGeomTool::AddSupGeomItem(const Handle(Geom_Curve)&         theCurve,
+                                              const TCollection_ExtendedString& theName)
+{
+  TDF_Label       aNewLabel = Label().NewChild();
+  TNaming_Builder aB(aNewLabel);
+
+  BRepBuilderAPI_MakeEdge aMaker;
+  aMaker.Init(theCurve);
+  if (!aMaker.IsDone())
+  {
+    return aNewLabel;
+  }
+
+  aB.Generated(aMaker.Shape());
+  if (!theName.IsEmpty())
+  {
+    TDataStd_Name::Set(aNewLabel, theName);
+  }
+  return aNewLabel;
+}
+
+//=================================================================================================
+
+TDF_Label XCAFDoc_SupGeomTool::AddSupGeomItem(const Handle(Geom_Surface)&       theSurface,
+                                              const TCollection_ExtendedString& theName)
+{
+  TDF_Label       aNewLabel = Label().NewChild();
+  TNaming_Builder aB(aNewLabel);
+
+  BRepBuilderAPI_MakeFace aMaker;
+  aMaker.Init(theSurface, Standard_True, Precision::Confusion());
+  if (!aMaker.IsDone())
+  {
+    return aNewLabel;
+  }
+
+  aB.Generated(aMaker.Shape());
   if (!theName.IsEmpty())
   {
     TDataStd_Name::Set(aNewLabel, theName);

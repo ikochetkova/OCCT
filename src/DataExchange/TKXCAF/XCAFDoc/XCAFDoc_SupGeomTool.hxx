@@ -19,6 +19,8 @@
 #include <TDataStd_GenericEmpty.hxx>
 #include <TDF_LabelSequence.hxx>
 
+class Geom_Curve;
+class Geom_Surface;
 class gp_Ax2;
 class gp_Ax3;
 class Standard_GUID;
@@ -61,6 +63,30 @@ public:
   //! \return     the label of the created item.
   Standard_EXPORT TDF_Label
     AddSupGeomItem(const gp_Ax3&                     theAx3,
+                   const TCollection_ExtendedString& theName = TCollection_ExtendedString());
+
+  //! Adds a a new supplemental geometry item (Point).
+  //! \param[in]  thePnt - point to add.
+  //! \param[in]  theName - name of the item to add.
+  //! \return     the label of the created item.
+  Standard_EXPORT TDF_Label
+    AddSupGeomItem(const gp_Pnt&                     thePnt,
+                   const TCollection_ExtendedString& theName = TCollection_ExtendedString());
+
+  //! Adds a a new supplemental geometry item (Curve).
+  //! \param[in]  theCurve - curve to add.
+  //! \param[in]  theName - name of the item to add.
+  //! \return     the label of the created item.
+  Standard_EXPORT TDF_Label
+    AddSupGeomItem(const Handle(Geom_Curve)&               theCurve,
+                   const TCollection_ExtendedString& theName = TCollection_ExtendedString());
+
+  //! Adds a a new supplemental geometry item (Surface).
+  //! \param[in]  theSurface - surface to add.
+  //! \param[in]  theName - name of the item to add.
+  //! \return     the label of the created item.
+  Standard_EXPORT TDF_Label
+    AddSupGeomItem(const Handle(Geom_Surface)&               theSurface,
                    const TCollection_ExtendedString& theName = TCollection_ExtendedString());
 
   //! Adds a reference between the given supplemental geometry label and shape label.

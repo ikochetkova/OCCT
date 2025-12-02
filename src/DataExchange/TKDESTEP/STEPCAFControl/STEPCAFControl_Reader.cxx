@@ -59,6 +59,7 @@
 #include <STEPControl_ActorRead.hxx>
 #include <STEPControl_Reader.hxx>
 #include <StepGeom_Axis2Placement3d.hxx>
+#include <StepGeom_Curve.hxx>
 #include <StepGeom_Direction.hxx>
 #include <StepData_Factors.hxx>
 #include <StepDimTol_AngularityTolerance.hxx>
@@ -3960,195 +3961,6 @@ TDF_Label STEPCAFControl_Reader::createGDTObjectInXCAF(const Handle(Standard_Tra
   return aGDTL;
 }
 
-// //==================================================================================================
-
-// Standard_Boolean STEPCAFControl_Reader::findReferenceGeometry(
-//   const Handle(Standard_Transient)& theShapeStart,
-//   const Handle(XCAFDoc_ShapeTool)&  theShTool,
-//   TDF_LabelSequence&                theShLabelSeq,
-//   const StepData_Factors&           theLocalFactors)
-// {
-//   const Handle(XSControl_TransferReader)&  aTransferReader   = myReader.WS()->TransferReader();
-//   const Handle(Transfer_TransientProcess)& aTransientProcess = aTransferReader->TransientProcess();
-//   TopoDS_Shape aShape = TransferBRep::ShapeResult(aTransientProcess, theShapeStart);
-//   if (!aShape.IsNull())
-//   {
-//     TDF_Label aShapeLabel;
-//     theShTool->Search(aShape, aShapeLabel, Standard_True, Standard_True, Standard_True);
-//     if (aShapeLabel.IsNull() && aShape.ShapeType() == TopAbs_WIRE)
-//     {
-//       for (TopExp_Explorer anExp(aShape, TopAbs_EDGE, TopAbs_SHAPE); anExp.More(); anExp.Next())
-//       {
-//         TDF_Label anEdgeLabel;
-//         theShTool->Search(anExp.Current(),
-//                           anEdgeLabel,
-//                           Standard_True,
-//                           Standard_True,
-//                           Standard_True);
-//         if (!anEdgeLabel.IsNull())
-//         {
-//           theShLabelSeq.Append(anEdgeLabel);
-//         }
-//       }
-//     }
-//     if (!aShapeLabel.IsNull())
-//     {
-//       theShLabelSeq.Append(aShapeLabel);
-//       return Standard_True;
-//     }
-//   }
-
-//   TDF_Label aFindResultL;
-//   if (myGDTMap.Find(theShapeStart, aFindResultL))
-//   {
-//     theShLabelSeq.Append(aFindResultL);
-//     return Standard_True;
-//   }
-
-//   const Handle(StepGeom_GeometricRepresentationItem)& aGeomItem =
-//     Handle(StepGeom_GeometricRepresentationItem)::DownCast(theShapeStart);
-//   if (aGeomItem.IsNull())
-//   {
-//     return Standard_False;
-//   }
-
-//   if (theShapeStart->IsKind(STANDARD_TYPE(StepGeom_Curve)))
-//   {
-//     const Handle(StepGeom_Curve)& aStepCurve = Handle(StepGeom_Curve)::DownCast(theShapeStart);
-//     Handle(Geom_Curve)            aCurve     = StepToGeom::MakeCurve(aStepCurve, theLocalFactors);
-//     if (aCurve.IsNull())
-//     {
-//       return Standard_False;
-//     }
-
-//     BRepBuilderAPI_MakeEdge aMaker;
-//     if (aCurve->IsKind(STANDARD_TYPE(Geom_Line)))
-//     {
-//       const Standard_Real aScale = theLocalFactors.LengthFactor();
-//       aMaker.Init(aCurve, 0, 1. * aScale);
-//     }
-//     else
-//     {
-//       aMaker.Init(aCurve);
-//     }
-//     if (aMaker.IsDone())
-//     {
-//       aShape = aMaker.Shape();
-//     }
-//   }
-//   else if (theShapeStart->IsKind(STANDARD_TYPE(StepGeom_Surface)))
-//   {
-//     const Handle(StepGeom_Surface)& aStepSurface =
-//       Handle(StepGeom_Surface)::DownCast(theShapeStart);
-//     Handle(Geom_Surface) aSurface = StepToGeom::MakeSurface(aStepSurface, theLocalFactors);
-//     if (aSurface.IsNull())
-//     {
-//       return Standard_False;
-//     }
-//     BRepBuilderAPI_MakeFace aMaker;
-//     if (aSurface->IsKind(STANDARD_TYPE(Geom_Plane)))
-//     {
-//       const Standard_Real aScale = theLocalFactors.LengthFactor();
-//       aMaker.Init(aSurface, 0., 1. * aScale, 0., 1. * aScale, Precision::Confusion());
-//     }
-//     else
-//     {
-//       aMaker.Init(aSurface, Standard_True, Precision::Confusion());
-//     }
-//     if (aMaker.IsDone())
-//     {
-//       aShape = aMaker.Shape();
-//     }
-//   }
-//   if (aShape.IsNull())
-//   {
-//     return Standard_False;
-//   }
-
-//   if (mySupplementalLabel.IsNull())
-//   {
-//     createSupplementalLabel(theShTool);
-//   }
-//   TDF_Label aSupGeomLabel = theShTool->AddComponent(mySupplementalLabel, aShape);
-//   if (aSupGeomLabel.IsNull())
-//   {
-//     return Standard_False;
-//   }
-
-//   TDataStd_UAttribute::Set(aSupGeomLabel, XCAFDoc::SupplementalGeometryGUID());
-
-//   if (!aGeomItem->Name().IsNull())
-//   {
-//     TDataStd_Name::Set(aSupGeomLabel, aGeomItem->Name()->String());
-//     TDF_Label aReferredShapeL;
-//     theShTool->GetReferredShape(aSupGeomLabel, aReferredShapeL);
-//     TDataStd_Name::Set(aReferredShapeL, aGeomItem->Name()->String());
-//     TDataStd_UAttribute::Set(aReferredShapeL, XCAFDoc::SupplementalGeometryGUID());
-//   }
-//   TDF_Label              aRefLabel;
-//   const Interface_Graph& aGraph = aTransientProcess->Graph();
-//   for (Interface_EntityIterator anIter(aGraph.Sharings(theShapeStart));
-//        anIter.More() && aRefLabel.IsNull();
-//        anIter.Next())
-//   {
-//     Handle(StepAP242_GeometricItemSpecificUsage) aPGISU =
-//       Handle(StepAP242_GeometricItemSpecificUsage)::DownCast(anIter.Value());
-//     if (aPGISU.IsNull())
-//     {
-//       continue;
-//     }
-//     Handle(StepRepr_ShapeAspect) aShAspect = aPGISU->Definition().ShapeAspect();
-//     if (aShAspect.IsNull())
-//     {
-//       continue;
-//     }
-//     Handle(StepRepr_ProductDefinitionShape) aRefPDS = aShAspect->OfShape();
-//     if (aRefPDS.IsNull())
-//     {
-//       continue;
-//     }
-//     const TopoDS_Shape aRefShape =
-//       TransferBRep::ShapeResult(aTransientProcess, aRefPDS->Definition().Value());
-//     theShTool->Search(aRefShape, aRefLabel, Standard_True, Standard_True, Standard_False);
-//   }
-
-//   if (aRefLabel.IsNull())
-//   {
-//     TDF_LabelSequence aFreeShapes;
-//     theShTool->GetFreeShapes(aFreeShapes);
-//     for (TDF_LabelSequence::Iterator anIter(aFreeShapes); anIter.More() && aRefLabel.IsNull();
-//          anIter.Next())
-//     {
-//       const TDF_Label             aLabel = anIter.Value();
-//       Handle(TDataStd_UAttribute) aSupGeomAttr;
-//       if (aLabel.FindAttribute(XCAFDoc::SupplementalContainerGUID(), aSupGeomAttr))
-//       {
-//         continue;
-//       }
-//       TopoDS_Shape aTmpShape = theShTool->GetShape(aLabel);
-//       if (!aTmpShape.IsNull())
-//       {
-//         aRefLabel = aLabel;
-//       }
-//     }
-//   }
-//   if (aRefLabel.IsNull())
-//   {
-//     return Standard_False;
-//   }
-
-//   // set reference
-//   Handle(TDataStd_TreeNode) aMainNode =
-//     TDataStd_TreeNode::Set(aRefLabel, XCAFDoc::SupplementalRefGUID());
-//   Handle(TDataStd_TreeNode) aRefNode =
-//     TDataStd_TreeNode::Set(aSupGeomLabel, XCAFDoc::SupplementalRefGUID());
-//   aRefNode->Remove(); // abv: fix against bug in TreeNode::Append()
-//   aMainNode->Append(aRefNode);
-//   myGDTMap.Bind(theShapeStart, aSupGeomLabel);
-//   theShLabelSeq.Append(aSupGeomLabel);
-//   return Standard_True;
-// }
-
 //=================================================================================================
 
 void convertAngleValue(const STEPConstruct_UnitContext& anUnitCtx, Standard_Real& aVal)
@@ -5595,20 +5407,8 @@ Standard_Boolean STEPCAFControl_Reader::ReadSupplemental(const Handle(XSControl_
       if (anItem.IsNull())
         continue;
 
-      // Find PMI references
-      Interface_EntityIterator aGISUIter         = aGraph.Sharings(anIter.Value());
-      NCollection_Sequence<Handle(StepAP242_GeometricItemSpecificUsage)> aGISUList;
-      for (; aGISUIter.More(); aGISUIter.Next())
-      {
-        if (aGISUIter.Value()->IsKind(STANDARD_TYPE(StepAP242_GeometricItemSpecificUsage)))
-        {
-          aGISUList.Append(
-            Handle(StepAP242_GeometricItemSpecificUsage)::DownCast(aGISUIter.Value()));
-        }
-      }
-
-      // Now only Axis2Placement3d is supported
       TDF_Label aSupGeomItemL;
+      bool isSupCreated = false;
       if (anItem->IsKind(STANDARD_TYPE(StepGeom_Axis2Placement3d)))
       {
         // Create a coordinate system from the STEP entity
@@ -5626,39 +5426,103 @@ Standard_Boolean STEPCAFControl_Reader::ReadSupplemental(const Handle(XSControl_
             aSupName = anAxis2Placement->Name()->String();
           }
           aSupGeomItemL = aSupGeomTool->AddSupGeomItem(anAxis->Ax2(), aSupName);
+          isSupCreated = true;
         }
-        else
-          continue;
+      }
+      else if (anItem->IsKind(STANDARD_TYPE(StepGeom_CartesianPoint)))
+      {
+        // Create a point from the STEP entity
+        Handle(StepGeom_CartesianPoint) aCartesianPoint =
+          Handle(StepGeom_CartesianPoint)::DownCast(anItem);
+        Handle(Geom_CartesianPoint) aPoint =
+          StepToGeom::MakeCartesianPoint(aCartesianPoint, theLocalFactors);
 
-        // set references to main shapes if exist
-        for (int itemIt = 1; itemIt <= aMainRepr->NbItems(); itemIt++)
+        // Add created geometry to the supplemental data
+        if (!aPoint.IsNull())
         {
-          Handle(StepRepr_RepresentationItem) aMainItem = aMainRepr->ItemsValue(itemIt);
-          if (aMainItem.IsNull())
-            continue;
-          // Get the shape corresponding to the main representation item
-          TopoDS_Shape aShape = TransferBRep::ShapeResult(aTransientProcess, aMainItem);
-          TDF_Label    aShapeLabel;
-          if (!aShape.IsNull())
+          TCollection_AsciiString aSupName("Point");
+          if (!aCartesianPoint->Name().IsNull())
           {
-            aSTool->Search(aShape, aShapeLabel, Standard_True, Standard_True, Standard_True);
+            aSupName = aCartesianPoint->Name()->String();
           }
-          if (!aShapeLabel.IsNull())
-          {
-            aSupGeomTool->AddShapeReference(aSupGeomItemL, aShapeLabel);
-          }
+          aSupGeomItemL = aSupGeomTool->AddSupGeomItem(aPoint->Pnt(), aSupName);
+          isSupCreated = true;
         }
-        // set PMI references if exist
-        for (Standard_Integer aGISUIt = 1; aGISUIt <= aGISUList.Length(); aGISUIt++)
+      }
+      else if (anItem->IsKind(STANDARD_TYPE(StepGeom_Curve)))
+      {
+        const Handle(StepGeom_Curve)& aStepCurve = Handle(StepGeom_Curve)::DownCast(anItem);
+        Handle(Geom_Curve)            aCurve = StepToGeom::MakeCurve(aStepCurve, theLocalFactors);
+        if (!aCurve.IsNull())
         {
-          Handle(StepAP242_GeometricItemSpecificUsage) aGISU = aGISUList.Value(aGISUIt);
-          if (aGISU.IsNull())
-            continue;
-          TDF_Label aPMILabel;
-          if (myGDTMap.Find(aGISU->Definition().Member(), aPMILabel))
+          TCollection_AsciiString aSupName("Curve");
+          if (!aStepCurve->Name().IsNull())
           {
-            aSupGeomTool->AddPMIReference(aSupGeomItemL, aPMILabel);
+            aSupName = aStepCurve->Name()->String();
           }
+          aSupGeomItemL = aSupGeomTool->AddSupGeomItem(aCurve, aSupName);
+          isSupCreated = true;
+        }
+      }
+      else if (anItem->IsKind(STANDARD_TYPE(StepGeom_Surface)))
+      {
+        const Handle(StepGeom_Surface)& aStepSurface =
+          Handle(StepGeom_Surface)::DownCast(anItem);
+        Handle(Geom_Surface) aSurface = StepToGeom::MakeSurface(aStepSurface, theLocalFactors);
+        if (!aSurface.IsNull())
+        {
+          TCollection_AsciiString aSupName("Surface");
+          if (!aStepSurface->Name().IsNull())
+          {
+            aSupName = aStepSurface->Name()->String();
+          }
+          aSupGeomItemL = aSupGeomTool->AddSupGeomItem(aSurface, aSupName);
+          isSupCreated = true;
+        }
+      }
+      if (!isSupCreated)
+        continue;
+
+      // set references to main shapes if exist
+      for (int itemIt = 1; itemIt <= aMainRepr->NbItems(); itemIt++)
+      {
+        Handle(StepRepr_RepresentationItem) aMainItem = aMainRepr->ItemsValue(itemIt);
+        if (aMainItem.IsNull())
+          continue;
+        // Get the shape corresponding to the main representation item
+        TopoDS_Shape aShape = TransferBRep::ShapeResult(aTransientProcess, aMainItem);
+        TDF_Label    aShapeLabel;
+        if (!aShape.IsNull())
+        {
+          aSTool->Search(aShape, aShapeLabel, Standard_True, Standard_True, Standard_True);
+        }
+        if (!aShapeLabel.IsNull())
+        {
+          aSupGeomTool->AddShapeReference(aSupGeomItemL, aShapeLabel);
+        }
+      }
+      
+      // Find PMI references
+      Interface_EntityIterator aGISUIter         = aGraph.Sharings(anIter.Value());
+      NCollection_Sequence<Handle(StepAP242_GeometricItemSpecificUsage)> aGISUList;
+      for (; aGISUIter.More(); aGISUIter.Next())
+      {
+        if (aGISUIter.Value()->IsKind(STANDARD_TYPE(StepAP242_GeometricItemSpecificUsage)))
+        {
+          aGISUList.Append(
+            Handle(StepAP242_GeometricItemSpecificUsage)::DownCast(aGISUIter.Value()));
+        }
+      }
+      // set PMI references if exist
+      for (Standard_Integer aGISUIt = 1; aGISUIt <= aGISUList.Length(); aGISUIt++)
+      {
+        Handle(StepAP242_GeometricItemSpecificUsage) aGISU = aGISUList.Value(aGISUIt);
+        if (aGISU.IsNull())
+          continue;
+        TDF_Label aPMILabel;
+        if (myGDTMap.Find(aGISU->Definition().Member(), aPMILabel))
+        {
+          aSupGeomTool->AddPMIReference(aSupGeomItemL, aPMILabel);
         }
       }
     }
