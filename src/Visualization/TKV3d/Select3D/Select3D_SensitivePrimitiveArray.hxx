@@ -231,6 +231,9 @@ public:
   //! Return the second node of last topmost detected edge or -1 if undefined (axis picking).
   int LastDetectedEdgeNode2() const { return myDetectedEdgeNode2; }
 
+  //! Return vertex by index.
+  Standard_EXPORT std::vector<NCollection_Vec3<float>> GetVertex(const int theIndex) const;
+
   //! Dumps the content of me into the stream
   Standard_EXPORT void DumpJson(Standard_OStream& theOStream, int theDepth = -1) const override;
 

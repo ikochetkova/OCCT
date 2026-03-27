@@ -410,6 +410,7 @@ void SelectMgr_ViewerSelector::traverseObject(
   }
 
   const bool hasEntityTrsfPers = anEntitySet->HasEntityWithPersistence() && !theCamera.IsNull();
+  const bool hasEntityFlipped = anEntitySet->HasEntityWithFlipping();
   const opencascade::handle<BVH_Tree<double, 3>>& aSensitivesTree = anEntitySet->BVH();
   gp_GTrsf                                        aInversedTrsf;
   if (theObject->HasTransformation() || !theObject->TransformPersistence().IsNull())
@@ -440,7 +441,7 @@ void SelectMgr_ViewerSelector::traverseObject(
   SelectMgr_SelectingVolumeManager aMgr = aInversedTrsf.Form() != gp_Identity
                                             ? theMgr.ScaleAndTransform(1, aInversedTrsf, nullptr)
                                             : theMgr;
-  if (!hasEntityTrsfPers
+  if (!hasEntityTrsfPers && !hasEntityFlipped
       && !aMgr.OverlapsBox(aSensitivesTree->MinPoint(0), aSensitivesTree->MaxPoint(0)))
   {
     return;
@@ -528,10 +529,10 @@ void SelectMgr_ViewerSelector::traverseObject(
     {
       const int  aLeftChildIdx  = aSensitivesTree->Child<0>(aNode);
       const int  aRightChildIdx = aSensitivesTree->Child<1>(aNode);
-      const bool isLeftChildIn  = hasEntityTrsfPers
+      const bool isLeftChildIn  = hasEntityTrsfPers || hasEntityFlipped
                                  || aMgr.OverlapsBox(aSensitivesTree->MinPoint(aLeftChildIdx),
                                                      aSensitivesTree->MaxPoint(aLeftChildIdx));
-      const bool isRightChildIn = hasEntityTrsfPers
+      const bool isRightChildIn = hasEntityTrsfPers || hasEntityFlipped
                                   || aMgr.OverlapsBox(aSensitivesTree->MinPoint(aRightChildIdx),
                                                       aSensitivesTree->MaxPoint(aRightChildIdx));
       if (isLeftChildIn && isRightChildIn)
@@ -624,8 +625,16 @@ void SelectMgr_ViewerSelector::traverseObject(
             aInvSensTrsf = (aTPers * gp_GTrsf(theObject->Transformation())).Inverted();
           }
 
-          computeFrustum(anEnt, theMgr, aMgr, aInvSensTrsf, aScaledTrnsfFrustums, aTmpMgr);
-          checkOverlap(anEnt, aInvSensTrsf, aTmpMgr);
+          gp_GTrsf aFlippingTrsf;
+          if (!anEnt->Flipper().IsNull())
+          {
+            const NCollection_Mat4<double> aMat = anEnt->Flipper()->Compute (theWorldViewMat);
+            aFlippingTrsf.SetMat4 (aMat);
+          }
+
+          gp_GTrsf aInvFlippingAndPers = aFlippingTrsf * aInvSensTrsf;
+          computeFrustum (anEnt, theMgr, aMgr, aInvFlippingAndPers, aScaledTrnsfFrustums, aTmpMgr);
+          checkOverlap (anEnt, aInvFlippingAndPers, aTmpMgr);
         }
       }
       if (aHead < 0)

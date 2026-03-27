@@ -36,6 +36,7 @@
 #include <AIS_Point.hxx>
 #include <Aspect_DisplayConnection.hxx>
 #include <Aspect_Grid.hxx>
+#include <Aspect_GridParams.hxx>
 #include <Aspect_TypeOfLine.hxx>
 #include <Draw_Appli.hxx>
 #include <Draw_Interpretor.hxx>
@@ -5230,6 +5231,114 @@ static int VGrid(Draw_Interpretor& /*theDI*/, int theArgNb, const char** theArgV
     }
   }
   aViewer->ActivateGrid(aType, aMode);
+  return 0;
+}
+
+//=================================================================================================
+
+static int VInfGrid (Draw_Interpretor& /*theDI*/,
+                     int  theArgNb,
+                     const char**      theArgVec)
+{
+  Handle(V3d_View)   aView = ViewerTest::CurrentView();
+  Handle(V3d_Viewer) aViewer = ViewerTest::GetViewerFromContext();
+  if (aView.IsNull() || aViewer.IsNull())
+  {
+    Message::SendFail("Error: no active viewer");
+    return 1;
+  }
+
+  Aspect_GridParams aGridParams;
+  bool toDisplay = true;
+  ViewerTest_AutoUpdater anUpdateTool (ViewerTest::GetAISContext(), aView);
+  for (int anArgIter = 1; anArgIter < theArgNb; ++anArgIter)
+  {
+    TCollection_AsciiString anArg (theArgVec[anArgIter]);
+    anArg.LowerCase();
+    if (anUpdateTool.parseRedrawMode(theArgVec[anArgIter]))
+    {
+      continue;
+    }
+    else if (anArgIter < theArgNb && anArg == "-background")
+    {
+      aGridParams.SetIsBackground (true);
+    }
+    else if (anArgIter + 1 < theArgNb && anArg == "-drawaxis")
+    {
+      int aVal = Draw::Atoi (theArgVec[++anArgIter]);
+      if (aVal == 0)
+      {
+        aGridParams.SetIsDrawAxis (false);
+      }
+      else if (aVal == 1)
+      {
+        aGridParams.SetIsDrawAxis (true);
+      }
+      else
+      {
+        Message::SendFail() << "Syntax error at '" << anArg << " " << aVal <<"'";
+        return 1;
+      }
+    }
+    else if (anArgIter + 3 < theArgNb && (anArg == "-color"))
+    {
+      Quantity_Color aColor;
+      aColor.SetValues (Draw::Atof (theArgVec[anArgIter + 1]), Draw::Atof (theArgVec[anArgIter + 2]), Draw::Atof (theArgVec[anArgIter + 3]), Quantity_TOC_RGB);
+      aGridParams.SetColor (aColor);
+      anArgIter += 3;
+    }
+    else if (anArgIter + 3 < theArgNb && anArg == "-origin")
+    {
+      gp_Pnt aPoint;
+      aPoint.SetXYZ (gp_XYZ (Draw::Atof (theArgVec[anArgIter + 1]), Draw::Atof (theArgVec[anArgIter + 2]), Draw::Atof (theArgVec[anArgIter + 3])));
+      aGridParams.SetPosition (aPoint);
+      anArgIter += 3;
+    }
+    else if (anArgIter + 1 < theArgNb && (anArg == "-inf"))
+    {
+      int aVal = Draw::Atoi(theArgVec[++anArgIter]);
+      if (aVal == 0)
+      {
+        aGridParams.SetIsInfinity (false);
+      }
+      else if (aVal == 1)
+      {
+        aGridParams.SetIsInfinity (true);
+      }
+      else
+      {
+        Message::SendFail() << "Syntax error at '" << anArg << " " << aVal << "'";
+        return 1;
+      }
+    }
+    else if (anArgIter + 1 < theArgNb && (anArg == "-scale"))
+    {
+      aGridParams.SetScale (Draw::Atof(theArgVec[++anArgIter]));
+    }
+    else if (anArgIter + 1 < theArgNb && anArg == "-linethickness")
+    {
+      aGridParams.SetLineThickness (Draw::Atof (theArgVec[++anArgIter]));
+    }
+    else if (anArgIter >= theArgNb && anArg == "off")
+    {
+      toDisplay = false;
+    }
+    else
+    {
+      Message::SendFail() << "Syntax error at '" << anArg << "'";
+      return 1;
+    }
+  }
+
+  if (toDisplay)
+  {
+    ViewerTest::CurrentView()->GridDisplay (aGridParams);
+  }
+  else
+  {
+    ViewerTest::CurrentView()->GridErase();
+  }
+
   return 0;
 }
 
@@ -13959,6 +14068,11 @@ vgrid [off] [-type {rect|circ}] [-mode {line|point}] [-origin X Y] [-rotAngle An
       [-step X Y] [-size DX DY]
       [-step StepRadius NbDivisions] [-radius Radius]
 )" /* [vgrid] */);
+
+  addCmd("vinfgrid", VInfGrid, /* [vinfgrid] */ R"(
+         vinfgrid [off] [-background] [-drawAxis {0|1}] [-color R G B] [-origin X Y Z] 
+         [-inf {0|1}] [-scale value] [-lineThickness value]
+)" /* [vinfgrid] */);
 
   addCmd("vpriviledgedplane", VPriviledgedPlane, /* [vpriviledgedplane] */ R"(
 vpriviledgedplane [Ox Oy Oz Nx Ny Nz [Xx Xy Xz]]

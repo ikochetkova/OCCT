@@ -50,25 +50,8 @@ public:
   void operator()(const IMeshData::IEdgePtr& theDEdge) const
   {
     const IMeshData::IEdgeHandle aDEdge = theDEdge;
-
-    int aPointsNb = aDEdge->GetCurve()->ParametersNb();
-
     aDEdge->Clear(true);
     aDEdge->SetDeflection(std::max(aDEdge->GetDeflection() / 3., Precision::Confusion()));
-
-    for (int aPCurveIt = 0; aPCurveIt < aDEdge->PCurvesNb(); ++aPCurveIt)
-    {
-      const IMeshData::IPCurveHandle& aPCurve = aDEdge->GetPCurve(aPCurveIt);
-      const IMeshData::IFaceHandle    aDFace  = aPCurve->GetFace();
-
-      // Check that outer wire contains 2 edges or less and add an additional point.
-      const IMeshData::IWireHandle& aDWire = aDFace->GetWire(0);
-      if (aDWire->EdgesNb() <= 2)
-      {
-        ++aPointsNb;
-        break;
-      }
-    }
 
     const IMeshData::IPCurveHandle&          aPCurve = aDEdge->GetPCurve(0);
     const IMeshData::IFaceHandle             aDFace  = aPCurve->GetFace();
@@ -76,17 +59,16 @@ public:
       BRepMesh_EdgeDiscret::CreateEdgeTessellator(aDEdge,
                                                   aPCurve->GetOrientation(),
                                                   aDFace,
-                                                  myParameters,
-                                                  aPointsNb);
+                                                  myParameters);
 
     BRepMesh_EdgeDiscret::Tessellate3d(aDEdge, aTessellator, false);
     BRepMesh_EdgeDiscret::Tessellate2d(aDEdge, false);
   }
 
 private:
-  EdgeAmplifier(const EdgeAmplifier& theOther) = delete;
+  EdgeAmplifier(const EdgeAmplifier& theOther);
 
-  void operator=(const EdgeAmplifier& theOther) = delete;
+  void operator=(const EdgeAmplifier& theOther);
 
 private:
   const IMeshTools_Parameters& myParameters;
@@ -186,7 +168,7 @@ void BRepMesh_ModelHealer::amplifyEdges()
     OSD_Parallel::ForEach(aEdgesToUpdate.cbegin(),
                           aEdgesToUpdate.cend(),
                           anEdgeAmplifier,
-                          !myParameters.InParallel || aEdgesToUpdate.Size() <= 1,
+                          !(myParameters.InParallel && aEdgesToUpdate.Size() > 1),
                           aEdgesToUpdate.Size());
 
     IMeshData::MapOfIFacePtr           aFacesToCheck(1, aTmpAlloc);
@@ -203,7 +185,7 @@ void BRepMesh_ModelHealer::amplifyEdges()
     OSD_Parallel::ForEach(aFacesToCheck.cbegin(),
                           aFacesToCheck.cend(),
                           *this,
-                          !myParameters.InParallel || aFacesToCheck.Size() <= 1,
+                          !(myParameters.InParallel && aFacesToCheck.Size() > 1),
                           aFacesToCheck.Size());
 
     aEdgesToUpdate.Clear();
@@ -221,7 +203,7 @@ bool BRepMesh_ModelHealer::popEdgesToUpdate(IMeshData::MapOfIEdgePtr& theEdgesTo
     Handle(IMeshData::MapOfIEdgePtr)& aIntersections = aFaceIt.ChangeValue();
     if (!aIntersections.IsNull())
     {
-      NCollection_MapAlgo::Unite(theEdgesToUpdate, *aIntersections);
+      theEdgesToUpdate.Unite(*aIntersections);
       aIntersections.Nullify();
     }
   }

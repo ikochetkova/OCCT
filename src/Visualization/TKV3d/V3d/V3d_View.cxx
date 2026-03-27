@@ -16,6 +16,7 @@
 #include <Aspect_CircularGrid.hxx>
 #include <Aspect_GradientBackground.hxx>
 #include <Aspect_Grid.hxx>
+#include <Aspect_GridParams.hxx>
 #include <Aspect_NeutralWindow.hxx>
 #include <Aspect_RectangularGrid.hxx>
 #include <Aspect_Window.hxx>
@@ -3553,6 +3554,19 @@ void V3d_View::GraduatedTrihedronDisplay(const Graphic3d_GraduatedTrihedron& the
 void V3d_View::GraduatedTrihedronErase()
 {
   myView->GraduatedTrihedronErase();
+}
+
+//=================================================================================================
+
+void V3d_View::GridDisplay (const Aspect_GridParams& theGridParams)
+{
+  myView->GridDisplay (theGridParams);
+}
+//=================================================================================================
+
+void V3d_View::GridErase()
+{
+  myView->GridErase();
 }
 
 //=================================================================================================

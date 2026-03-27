@@ -19,8 +19,8 @@
 
 #include <Graphic3d_BndBox4f.hxx>
 #include <Graphic3d_AspectFillArea3d.hxx>
-#include <NCollection_DataMap.hxx>
 #include <Standard_CString.hxx>
+#include <Graphic3d_Flipper.hxx>
 #include <Graphic3d_Vertex.hxx>
 #include <Graphic3d_TextPath.hxx>
 #include <Graphic3d_HorizontalTextAlignment.hxx>
@@ -30,8 +30,8 @@
 #include <Graphic3d_Buffer.hxx>
 #include <Graphic3d_BoundBuffer.hxx>
 #include <gp_Ax2.hxx>
+#include <NCollection_DataMap.hxx>
 #include <TCollection_ExtendedString.hxx>
-class Graphic3d_Aspects;
 
 class Graphic3d_Structure;
 class Graphic3d_ArrayOfPrimitives;
@@ -129,6 +129,9 @@ public:
 public:
   //! sets the stencil test to theIsEnabled state;
   Standard_EXPORT virtual void SetStencilTestOptions(const bool theIsEnabled) = 0;
+
+  //! Return flipper.
+  const occ::handle<Graphic3d_Flipper>& Flipper() const { return myFlipper; }
 
   //! sets the flipping to theIsEnabled state.
   Standard_EXPORT virtual void SetFlippingOptions(const bool    theIsEnabled,
@@ -315,6 +318,7 @@ protected:
 
 protected:
   occ::handle<Graphic3d_TransformPers> myTrsfPers;  //!< current transform persistence
+  occ::handle<Graphic3d_Flipper>       myFlipper;   //!< current transform persistence
   Graphic3d_Structure*                 myStructure; //!< pointer to the parent structure
   Graphic3d_BndBox4f                   myBounds;    //!< bounding box
   gp_Trsf                              myTrsf;      //!< group transformation

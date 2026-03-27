@@ -118,15 +118,6 @@ public:
 
       Bnd_Box aBoundingBox;
       anObject->BoundingBox(aBoundingBox);
-      if (!aBoundingBox.IsVoid() && !anObject->TransformPersistence().IsNull())
-      {
-        anObject->TransformPersistence()->Apply(theCamera,
-                                                theProjectionMat,
-                                                theWorldViewMat,
-                                                theWinSize.x(),
-                                                theWinSize.y(),
-                                                aBoundingBox);
-      }
 
       // processing presentations with own transform persistence
       for (NCollection_Sequence<occ::handle<PrsMgr_Presentation>>::Iterator aPrsIter(
@@ -135,7 +126,8 @@ public:
            aPrsIter.Next())
       {
         const occ::handle<PrsMgr_Presentation>& aPrs3d = aPrsIter.Value();
-        if (!aPrs3d->CStructure()->HasGroupTransformPersistence())
+        if (!aPrs3d->CStructure()->HasGroupTransformPersistence()
+            && !aPrs3d->CStructure()->HasGroupFlipping())
         {
           continue;
         }
@@ -147,7 +139,8 @@ public:
         {
           const occ::handle<Graphic3d_Group>& aGroup  = aGroupIter.Value();
           const Graphic3d_BndBox4f&           aBndBox = aGroup->BoundingBox();
-          if (aGroup->TransformPersistence().IsNull() || !aBndBox.IsValid())
+          if ((aGroup->Flipper().IsNull() && aGroup->TransformPersistence().IsNull())
+               || !aBndBox.IsValid())
           {
             continue;
           }
@@ -159,15 +152,30 @@ public:
                            aBndBox.CornerMax().x(),
                            aBndBox.CornerMax().y(),
                            aBndBox.CornerMax().z());
-          aGroup->TransformPersistence()->Apply(theCamera,
-                                                theProjectionMat,
-                                                theWorldViewMat,
-                                                theWinSize.x(),
-                                                theWinSize.y(),
-                                                aGroupBox);
+          if (!aGroup->Flipper().IsNull())
+            {
+              aGroup->Flipper()->Apply (theWorldViewMat, aGroupBox);
+            }
+
+            if (!aGroup->TransformPersistence().IsNull())
+            {
+              aGroup->TransformPersistence()->Apply (theCamera,
+                                                     theProjectionMat, theWorldViewMat,
+                                                     theWinSize.x(), theWinSize.y(),
+                                                     aGroupBox);
+            }
           aBoundingBox.Add(aGroupBox);
         }
       }
+
+      if (!aBoundingBox.IsVoid()
+         && !anObject->TransformPersistence().IsNull())
+        {
+          anObject->TransformPersistence()->Apply (theCamera,
+                                                   theProjectionMat, theWorldViewMat,
+                                                   theWinSize.x(), theWinSize.y(),
+                                                   aBoundingBox);
+        }
 
       if (aBoundingBox.IsVoid())
       {

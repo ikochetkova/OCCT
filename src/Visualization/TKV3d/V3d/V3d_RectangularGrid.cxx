@@ -115,6 +115,12 @@ void V3d_RectangularGrid::Display()
   UpdateDisplay();
 }
 
+void V3d_RectangularGrid::Update()
+{
+  SetXStep(XStep() + 1);
+  UpdateDisplay();
+}
+
 void V3d_RectangularGrid::Erase() const
 {
   myStructure->Erase();

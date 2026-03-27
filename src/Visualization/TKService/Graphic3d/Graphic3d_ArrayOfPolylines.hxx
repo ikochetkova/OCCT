@@ -110,17 +110,20 @@ public:
   //! @param theHasBColors when TRUE AddBound(number,Color) should be used to specify sub-group
   //! color
   Graphic3d_ArrayOfPolylines(int  theMaxVertexs,
-                             int  theMaxBounds  = 0,
-                             int  theMaxEdges   = 0,
-                             bool theHasVColors = false,
-                             bool theHasBColors = false)
+                             int  theMaxBounds      = 0,
+                             int  theMaxEdges       = 0,
+                             bool theHasVColors     = false,
+                             bool theHasBColors     = false,
+                             bool theHasVColorsBack = false)
       : Graphic3d_ArrayOfPrimitives(
           Graphic3d_TOPA_POLYLINES,
           theMaxVertexs,
           theMaxBounds,
           theMaxEdges,
           (theHasVColors ? Graphic3d_ArrayFlags_VertexColor : Graphic3d_ArrayFlags_None)
-            | (theHasBColors ? Graphic3d_ArrayFlags_BoundColor : Graphic3d_ArrayFlags_None))
+            | (theHasBColors ? Graphic3d_ArrayFlags_BoundColor : Graphic3d_ArrayFlags_None)
+            | (theHasVColorsBack ? Graphic3d_ArrayFlags_VertexColorBack
+                                 : Graphic3d_ArrayFlags_None))
   {
   }
 };

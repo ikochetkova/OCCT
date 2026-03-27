@@ -27,11 +27,12 @@
 //! Type of attribute in Vertex Buffer
 enum Graphic3d_TypeOfAttribute
 {
-  Graphic3d_TOA_POS = 0, //!< vertex position
-  Graphic3d_TOA_NORM,    //!< normal
-  Graphic3d_TOA_UV,      //!< texture coordinates
-  Graphic3d_TOA_COLOR,   //!< per-vertex color
-  Graphic3d_TOA_CUSTOM,  //!< custom attributes
+  Graphic3d_TOA_POS = 0,    //!< vertex position
+  Graphic3d_TOA_NORM,       //!< normal
+  Graphic3d_TOA_UV,         //!< texture coordinates
+  Graphic3d_TOA_COLOR,      //!< per-vertex color
+  Graphic3d_TOA_COLOR_BACK, //!< per-vertex color back
+  Graphic3d_TOA_CUSTOM,     //!< custom attributes
 };
 
 //! Type of the element in Vertex or Index Buffer

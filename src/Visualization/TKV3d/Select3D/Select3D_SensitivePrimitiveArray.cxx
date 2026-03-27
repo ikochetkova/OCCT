@@ -140,7 +140,7 @@ struct Select3D_SensitivePrimitiveArray::Select3D_SensitivePrimitiveArray_InitFu
 
 private:
   Select3D_SensitivePrimitiveArray_InitFunctor operator=(
-    Select3D_SensitivePrimitiveArray_InitFunctor&) = delete;
+    Select3D_SensitivePrimitiveArray_InitFunctor&);
 
 private:
   Select3D_SensitivePrimitiveArray& myPrimArray;
@@ -163,7 +163,7 @@ struct Select3D_SensitivePrimitiveArray::Select3D_SensitivePrimitiveArray_BVHFun
 
 private:
   Select3D_SensitivePrimitiveArray_BVHFunctor operator=(
-    Select3D_SensitivePrimitiveArray_BVHFunctor&) = delete;
+    Select3D_SensitivePrimitiveArray_BVHFunctor&);
 
 private:
   NCollection_Array1<occ::handle<Select3D_SensitivePrimitiveArray>>& myGroups;
@@ -399,6 +399,21 @@ bool Select3D_SensitivePrimitiveArray::InitTriangulation(
     computeBoundingBox();
   }
   return true;
+}
+
+//=================================================================================================
+
+std::vector<NCollection_Vec3<float>> Select3D_SensitivePrimitiveArray::GetVertex(const int theIndex) const
+{
+  std::vector<NCollection_Vec3<float>> aVertices;
+  aVertices.reserve(3);
+  NCollection_Vec3<int> aTriNodes;
+  const int       anIndexOffset = theIndex * 3;
+  getTriIndices(myIndices, anIndexOffset, aTriNodes);
+  aVertices.push_back(getPosVec3(aTriNodes[0]));
+  aVertices.push_back(getPosVec3(aTriNodes[1]));
+  aVertices.push_back(getPosVec3(aTriNodes[2]));
+  return aVertices;
 }
 
 //=================================================================================================

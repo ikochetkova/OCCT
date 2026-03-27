@@ -205,4 +205,6 @@ set(OCCT_Graphic3d_FILES
   Graphic3d_Layer.hxx
   Graphic3d_ZLayerId.hxx
   Graphic3d_ZLayerSettings.hxx
+  Graphic3d_Flipper.hxx
+  Graphic3d_Flipper.cxx
 )

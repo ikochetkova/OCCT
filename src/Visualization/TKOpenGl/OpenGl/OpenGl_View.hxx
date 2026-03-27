@@ -20,6 +20,7 @@
 #include <Graphic3d_WorldViewProjState.hxx>
 #include <math_BullardGenerator.hxx>
 
+#include <Aspect_GridParams.hxx>
 #include <OpenGl_FrameBuffer.hxx>
 #include <OpenGl_FrameStatsPrs.hxx>
 #include <OpenGl_GraduatedTrihedron.hxx>
@@ -316,6 +317,12 @@ public: //! @name obsolete Graduated Trihedron functionality
   //! Erases Graduated Trihedron.
   Standard_EXPORT void GraduatedTrihedronErase() override;
 
+  //! Displays Grid.
+  Standard_EXPORT void GridDisplay (const Aspect_GridParams& theGridParams) override;
+
+  //! Erases Grid.
+  Standard_EXPORT void GridErase() override;
+
   //! Sets minimum and maximum points of scene bounding box for Graduated Trihedron stored in
   //! graphic view object.
   //! @param[in] theMin  the minimum point of scene.
@@ -418,6 +425,9 @@ protected: //! @name Rendering of GL graphics (with prepared drawing buffer).
                                              OpenGl_FrameBuffer*          theOitAccumFbo,
                                              const bool                   theToDrawImmediate);
 
+  //! Renders grid
+  Standard_EXPORT void renderGrid();
+
   //! Renders trihedron.
   void renderTrihedron(const occ::handle<OpenGl_Workspace>& theWorkspace);
 
@@ -468,7 +478,9 @@ protected:
   gp_XYZ                                      myLocalOrigin;
   occ::handle<OpenGl_FrameBuffer>             myFBO;
   bool                                        myToShowGradTrihedron;
+  bool                                        myToShowGrid;
   Graphic3d_GraduatedTrihedron                myGTrihedronData;
+  Aspect_GridParams                           myGridParams;
 
   occ::handle<Graphic3d_LightSet> myNoShadingLight;
   occ::handle<Graphic3d_LightSet> myLights;

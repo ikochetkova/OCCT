@@ -63,10 +63,11 @@ public:
   //! @param theHasVTexels  when TRUE,  AddVertex(Point,Texel) or AddVertex(Point,Normal,Texel)
   //! should be used to specify vertex UV coordinates
   Graphic3d_ArrayOfTriangles(int  theMaxVertexs,
-                             int  theMaxEdges    = 0,
-                             bool theHasVNormals = false,
-                             bool theHasVColors  = false,
-                             bool theHasVTexels  = false)
+                             int  theMaxEdges       = 0,
+                             bool theHasVNormals    = false,
+                             bool theHasVColors     = false,
+                             bool theHasVTexels     = false,
+                             bool theHasVColorsBack = false)
       : Graphic3d_ArrayOfPrimitives(
           Graphic3d_TOPA_TRIANGLES,
           theMaxVertexs,
@@ -74,7 +75,9 @@ public:
           theMaxEdges,
           (theHasVNormals ? Graphic3d_ArrayFlags_VertexNormal : Graphic3d_ArrayFlags_None)
             | (theHasVColors ? Graphic3d_ArrayFlags_VertexColor : Graphic3d_ArrayFlags_None)
-            | (theHasVTexels ? Graphic3d_ArrayFlags_VertexTexel : Graphic3d_ArrayFlags_None))
+            | (theHasVTexels ? Graphic3d_ArrayFlags_VertexTexel : Graphic3d_ArrayFlags_None)
+            | (theHasVColorsBack ? Graphic3d_ArrayFlags_VertexColorBack
+                                 : Graphic3d_ArrayFlags_None))
   {
   }
 };

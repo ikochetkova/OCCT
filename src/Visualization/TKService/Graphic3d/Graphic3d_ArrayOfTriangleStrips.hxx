@@ -45,7 +45,7 @@ public:
   //! @endcode
   //! @param theMaxVertexs defines the maximum allowed vertex number in the array
   //! @param theMaxStrips  defines the maximum allowed strip  number in the array;
-  //!                      the number of triangle really drawn is: VertexNumber() - 2 * std::min(1,
+  //!                      the number of triangle really drawn is: VertexNumber() - 2 * Min(1,
   //!                      BoundNumber())
   //! @param theArrayFlags array flags
   Graphic3d_ArrayOfTriangleStrips(int                  theMaxVertexs,
@@ -62,7 +62,7 @@ public:
   //! Creates an array of triangle strips (Graphic3d_TOPA_TRIANGLESTRIPS).
   //! @param theMaxVertexs defines the maximum allowed vertex number in the array
   //! @param theMaxStrips  defines the maximum allowed strip  number in the array;
-  //!                      the number of triangle really drawn is: VertexNumber() - 2 * std::min(1,
+  //!                      the number of triangle really drawn is: VertexNumber() - 2 * Min(1,
   //!                      BoundNumber())
   //! @param theHasVNormals when TRUE, AddVertex(Point,Normal), AddVertex(Point,Normal,Color) or
   //! AddVertex(Point,Normal,Texel) should be used to specify vertex normal;
@@ -75,11 +75,12 @@ public:
   //! @param theHasVTexels  when TRUE, AddVertex(Point,Texel) or AddVertex(Point,Normal,Texel)
   //! should be used to specify vertex UV coordinates
   Graphic3d_ArrayOfTriangleStrips(int  theMaxVertexs,
-                                  int  theMaxStrips   = 0,
-                                  bool theHasVNormals = false,
-                                  bool theHasVColors  = false,
-                                  bool theHasBColors  = false,
-                                  bool theHasVTexels  = false)
+                                  int  theMaxStrips      = 0,
+                                  bool theHasVNormals    = false,
+                                  bool theHasVColors     = false,
+                                  bool theHasBColors     = false,
+                                  bool theHasVTexels     = false,
+                                  bool theHasVColorsBack = false)
       : Graphic3d_ArrayOfPrimitives(
           Graphic3d_TOPA_TRIANGLESTRIPS,
           theMaxVertexs,
@@ -88,7 +89,9 @@ public:
           (theHasVNormals ? Graphic3d_ArrayFlags_VertexNormal : Graphic3d_ArrayFlags_None)
             | (theHasVColors ? Graphic3d_ArrayFlags_VertexColor : Graphic3d_ArrayFlags_None)
             | (theHasVTexels ? Graphic3d_ArrayFlags_VertexTexel : Graphic3d_ArrayFlags_None)
-            | (theHasBColors ? Graphic3d_ArrayFlags_BoundColor : Graphic3d_ArrayFlags_None))
+            | (theHasBColors ? Graphic3d_ArrayFlags_BoundColor : Graphic3d_ArrayFlags_None)
+            | (theHasVColorsBack ? Graphic3d_ArrayFlags_VertexColorBack
+                                 : Graphic3d_ArrayFlags_None))
   {
   }
 };

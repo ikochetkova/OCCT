@@ -32,15 +32,13 @@ class BRepMesh_CurveTessellator : public IMeshTools_CurveTessellator
 public:
   //! Constructor.
   Standard_EXPORT BRepMesh_CurveTessellator(const IMeshData::IEdgeHandle& theEdge,
-                                            const IMeshTools_Parameters&  theParameters,
-                                            const int                     theMinPointsNb = 2);
+                                            const IMeshTools_Parameters&  theParameters);
 
   //! Constructor.
   Standard_EXPORT BRepMesh_CurveTessellator(const IMeshData::IEdgeHandle& theEdge,
                                             const TopAbs_Orientation      theOrientation,
                                             const IMeshData::IFaceHandle& theFace,
-                                            const IMeshTools_Parameters&  theParameters,
-                                            const int                     theMinPointsNb = 2);
+                                            const IMeshTools_Parameters&  theParameters);
 
   //! Destructor.
   Standard_EXPORT ~BRepMesh_CurveTessellator() override;
@@ -53,9 +51,9 @@ public:
   //! @param theParameter parameters on PCurve corresponded to the solution.
   //! @param thePoint tessellation point.
   //! @return True in case of valid result, false elewhere.
-  Standard_EXPORT bool Value(const int theIndex,
-                             gp_Pnt&   thePoint,
-                             double&   theParameter) const override;
+  Standard_EXPORT virtual bool Value(const int theIndex,
+                                     gp_Pnt&   thePoint,
+                                     double&   theParameter) const override;
 
   DEFINE_STANDARD_RTTIEXT(BRepMesh_CurveTessellator, IMeshTools_CurveTessellator)
 
@@ -79,16 +77,15 @@ private:
   bool isInToleranceOfVertex(const gp_Pnt& thePoint, const TopoDS_Vertex& theVertex) const;
 
 private:
-  BRepMesh_CurveTessellator(const BRepMesh_CurveTessellator& theOther) = delete;
+  BRepMesh_CurveTessellator(const BRepMesh_CurveTessellator& theOther);
 
-  void operator=(const BRepMesh_CurveTessellator& theOther) = delete;
+  void operator=(const BRepMesh_CurveTessellator& theOther);
 
 private:
   const IMeshData::IEdgeHandle& myDEdge;
   const IMeshTools_Parameters&  myParameters;
   TopoDS_Edge                   myEdge;
   BRepAdaptor_Curve             myCurve;
-  int                           myMinPointsNb;
   GCPnts_TangentialDeflection   myDiscretTool;
   TopoDS_Vertex                 myFirstVertex;
   TopoDS_Vertex                 myLastVertex;

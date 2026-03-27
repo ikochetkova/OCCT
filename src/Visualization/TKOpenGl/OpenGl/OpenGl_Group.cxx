@@ -197,6 +197,11 @@ void OpenGl_Group::SetFlippingOptions(const bool theIsEnabled, const gp_Ax2& the
   OpenGl_Flipper* aFlipper = new OpenGl_Flipper(theRefPlane);
   aFlipper->SetOptions(theIsEnabled);
   AddElement(aFlipper);
+  if (theIsEnabled)
+  {
+    myStructure->CStructure()->SetGroupFlipping(true);
+    myFlipper = new Graphic3d_Flipper(theRefPlane);
+  }
 }
 
 //=================================================================================================

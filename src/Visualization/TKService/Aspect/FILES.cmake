@@ -85,4 +85,5 @@ set(OCCT_Aspect_FILES
   Aspect_XRSession.cxx
   Aspect_XRSession.hxx
   Aspect_XRTrackedDeviceRole.hxx
+  Aspect_GridParams.hxx
 )

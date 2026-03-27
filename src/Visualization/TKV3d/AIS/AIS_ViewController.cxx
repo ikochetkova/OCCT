@@ -1438,6 +1438,9 @@ void AIS_ViewController::handlePanning(const occ::handle<V3d_View>& theView)
   AbortViewAnimation();
 
   const occ::handle<Graphic3d_Camera>& aCam = theView->Camera();
+  aCam->SetPanningVector(aCam->PanningVector() +
+                         gp_Vec2d(theView->Convert(myGL.Panning.Delta.x()),
+                                  theView->Convert(myGL.Panning.Delta.y())));
   if (aCam->IsOrthographic() || !hasPanningAnchorPoint())
   {
     theView->Pan(myGL.Panning.Delta.x(), myGL.Panning.Delta.y());
@@ -1640,6 +1643,7 @@ void AIS_ViewController::handleOrbitRotation(const occ::handle<V3d_View>& theVie
     myCamStartOpEye    = aCam->Eye();
     myCamStartOpCenter = aCam->Center();
 
+    aCam->SetRotationPoint (myRotatePnt3d);
     theView->Invalidate();
   }
 
@@ -1819,6 +1823,7 @@ void AIS_ViewController::handleViewRotation(const occ::handle<V3d_View>& theView
     // Store initial camera state
     myCamStartOpUp  = aCam->Up();
     myCamStartOpDir = aCam->Direction();
+    aCam->SetRotationPoint (gp::Origin());
   }
 
   if (toRotateAnyway)
@@ -2278,6 +2283,11 @@ void AIS_ViewController::handleCameraActions(const occ::handle<AIS_InteractiveCo
     theView->FitAll(aFitMargin, false);
     theView->Invalidate();
     myGL.Orientation.ToFitAll = false;
+  }
+
+  if (theView->Viewer()->Grid()->IsActive() && theView->Viewer()->GridEcho())
+  {
+    theView->Viewer()->Grid()->Update();
   }
 
   NCollection_List<occ::handle<AIS_InteractiveObject>> anObjects;

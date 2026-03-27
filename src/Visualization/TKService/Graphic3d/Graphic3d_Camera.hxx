@@ -269,6 +269,22 @@ public:
   //! @param[in] theCenter  the point where the camera looks at.
   Standard_EXPORT void SetCenter(const gp_Pnt& theCenter);
 
+  //! Get active rotation center of the camera (gravity point).
+  //! @return the gravity point.
+  gp_Pnt RotationPoint() const { return myRotationPoint; }
+
+  //! Sets active rotation center of the camera (gravity point).
+  //! @param theRotationPoint [in] the gravity point.
+  void SetRotationPoint(const gp_Pnt& theRotationPoint) { myRotationPoint = theRotationPoint; }
+
+  //! Get panning translation.
+  //! @return the panning translation.
+  gp_Vec2d PanningVector() const { return myPanningVector; }
+
+  //! Sets panning translation.
+  //! @param thePanningVector [in] the panning translation.
+  void SetPanningVector(const gp_Vec2d& thePanningVector) { myPanningVector = thePanningVector; }
+
   //! Get distance of Eye from camera Center.
   //! @return the distance.
   double Distance() const { return myDistance; }
@@ -776,6 +792,8 @@ private:
   gp_Dir myUp;        //!< Camera up direction vector
   gp_Dir myDirection; //!< Camera view direction (from eye)
   gp_Pnt myEye;       //!< Camera eye position
+  gp_Pnt   myRotationPoint;
+  gp_Vec2d myPanningVector;
   double myDistance;  //!< distance from Eye to Center
 
   gp_XYZ myAxialScale; //!< World axial scale.

@@ -42,6 +42,7 @@
 #include <TCollection_AsciiString.hxx>
 #include <NCollection_IndexedDataMap.hxx>
 
+class Aspect_GridParams;
 class Aspect_NeutralWindow;
 class Aspect_XRSession;
 class Graphic3d_CView;
@@ -580,6 +581,12 @@ public: //! @name obsolete Graduated Trihedron functionality
 
   //! Erases Graduated Trihedron.
   virtual void GraduatedTrihedronErase() {}
+
+  //! Displays Grid.
+  virtual void GridDisplay(const Aspect_GridParams& theGridParams) { (void)theGridParams; }
+
+  //! Erases Grid.
+  virtual void GridErase() {}
 
   //! Sets minimum and maximum points of scene bounding box for Graduated Trihedron stored in
   //! graphic view object.

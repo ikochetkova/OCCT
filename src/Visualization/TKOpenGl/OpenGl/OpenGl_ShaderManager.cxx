@@ -1445,6 +1445,25 @@ bool OpenGl_ShaderManager::preparePBREnvBakingProgram(int theIndex)
 
 //=================================================================================================
 
+bool OpenGl_ShaderManager::prepareGridProgram()
+{
+  occ::handle<Graphic3d_ShaderProgram> aProgramSrc = getGridProgram();
+
+  TCollection_AsciiString aKey;
+  if (!Create(aProgramSrc, aKey, myGridProgram))
+  {
+    myGridProgram = new OpenGl_ShaderProgram(); // just mark as invalid
+    return false;
+  }
+ 
+  myContext->BindProgram(myGridProgram);
+  myContext->BindProgram(occ::handle<OpenGl_ShaderProgram>());
+
+  return true;
+}
+
+//=================================================================================================
+
 const occ::handle<Graphic3d_ShaderProgram>& OpenGl_ShaderManager::GetBgCubeMapProgram()
 {
   if (myBgCubeMapProgram.IsNull())

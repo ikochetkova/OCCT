@@ -108,12 +108,13 @@ public:
   //! @param theMaxBounds  defines the maximum allowed bound  number in the array
   //! @param theMaxEdges   defines the maximum allowed edge   number in the array
   Graphic3d_ArrayOfPolygons(const int  theMaxVertexs,
-                            const int  theMaxBounds   = 0,
-                            const int  theMaxEdges    = 0,
-                            const bool theHasVNormals = false,
-                            const bool theHasVColors  = false,
-                            const bool theHasBColors  = false,
-                            const bool theHasVTexels  = false)
+                            const int  theMaxBounds      = 0,
+                            const int  theMaxEdges       = 0,
+                            const bool theHasVNormals    = false,
+                            const bool theHasVColors     = false,
+                            const bool theHasBColors     = false,
+                            const bool theHasVTexels     = false,
+                            const bool theHasVColorsBack = false)
       : Graphic3d_ArrayOfPrimitives(
           Graphic3d_TOPA_POLYGONS,
           theMaxVertexs,
@@ -122,7 +123,9 @@ public:
           (theHasVNormals ? Graphic3d_ArrayFlags_VertexNormal : Graphic3d_ArrayFlags_None)
             | (theHasVColors ? Graphic3d_ArrayFlags_VertexColor : Graphic3d_ArrayFlags_None)
             | (theHasBColors ? Graphic3d_ArrayFlags_BoundColor : Graphic3d_ArrayFlags_None)
-            | (theHasVTexels ? Graphic3d_ArrayFlags_VertexTexel : Graphic3d_ArrayFlags_None))
+            | (theHasVTexels ? Graphic3d_ArrayFlags_VertexTexel : Graphic3d_ArrayFlags_None)
+            | (theHasVColorsBack ? Graphic3d_ArrayFlags_VertexColorBack
+                                 : Graphic3d_ArrayFlags_None))
   {
   }
 };

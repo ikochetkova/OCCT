@@ -21,6 +21,7 @@
 #include <Select3D_BndBox3d.hxx>
 #include <SelectMgr_SelectingVolumeManager.hxx>
 #include <TopLoc_Location.hxx>
+#include <Graphic3d_Flipper.hxx>
 
 class Graphic3d_TransformPers;
 class SelectMgr_EntityOwner;
@@ -102,6 +103,13 @@ public:
     myTrsfPers = theTrsfPers;
   }
 
+  //! Return coordinate system for flipping.
+  const occ::handle<Graphic3d_Flipper>& Flipper() const { return myFlipper; }
+
+  //! Set transformation persistence.
+  Standard_EXPORT virtual void SetFlippingOptions(const bool    theIsEnabled,
+                                                  const gp_Ax2& theRefPlane);
+
   //! Dumps the content of me into the stream
   Standard_EXPORT virtual void DumpJson(Standard_OStream& theOStream, int theDepth = -1) const;
 
@@ -111,6 +119,7 @@ protected:
 protected:
   occ::handle<SelectMgr_EntityOwner>   myOwnerId;
   occ::handle<Graphic3d_TransformPers> myTrsfPers;
+  occ::handle<Graphic3d_Flipper>       myFlipper;
   int                                  mySFactor;
 };
 

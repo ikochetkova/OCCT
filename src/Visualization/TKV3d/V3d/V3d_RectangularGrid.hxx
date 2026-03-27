@@ -42,6 +42,8 @@ public:
 
   Standard_EXPORT void Display() override;
 
+  Standard_EXPORT void Update() override;
+
   Standard_EXPORT void Erase() const override;
 
   Standard_EXPORT bool IsDisplayed() const override;

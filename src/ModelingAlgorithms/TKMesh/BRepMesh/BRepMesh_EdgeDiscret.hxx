@@ -38,16 +38,14 @@ public:
   //! Creates instance of free edge tessellator.
   Standard_EXPORT static occ::handle<IMeshTools_CurveTessellator> CreateEdgeTessellator(
     const IMeshData::IEdgeHandle& theDEdge,
-    const IMeshTools_Parameters&  theParameters,
-    const int                     theMinPointsNb = 2);
+    const IMeshTools_Parameters&  theParameters);
 
   //! Creates instance of edge tessellator.
   Standard_EXPORT static occ::handle<IMeshTools_CurveTessellator> CreateEdgeTessellator(
     const IMeshData::IEdgeHandle& theDEdge,
     const TopAbs_Orientation      theOrientation,
     const IMeshData::IFaceHandle& theDFace,
-    const IMeshTools_Parameters&  theParameters,
-    const int                     theMinPointsNb = 2);
+    const IMeshTools_Parameters&  theParameters);
 
   //! Creates instance of tessellation extractor.
   Standard_EXPORT static occ::handle<IMeshTools_CurveTessellator> CreateEdgeTessellationExtractor(
@@ -71,9 +69,9 @@ public:
 
 protected:
   //! Performs processing of edges of the given model.
-  Standard_EXPORT bool performInternal(const occ::handle<IMeshData_Model>& theModel,
-                                       const IMeshTools_Parameters&        theParameters,
-                                       const Message_ProgressRange&        theRange) override;
+  Standard_EXPORT bool performInternal(const Handle(IMeshData_Model)& theModel,
+                                       const IMeshTools_Parameters&   theParameters,
+                                       const Message_ProgressRange&   theRange) override;
 
 private:
   //! Checks existing discretization of the edge and updates data model.

@@ -168,6 +168,10 @@ public:
   //! Dumps the content of me into the stream
   Standard_EXPORT void DumpJson(Standard_OStream& theOStream, int theDepth = -1) const override;
 
+public:
+  //! 2D inclusion test: project 3D point onto selection plane and check inside original polyline
+  Standard_EXPORT bool IsInsideByProjection(const gp_Pnt& thePnt) const;
+
 private:
   //! Checks whether the segment intersects with the boundary of the current volume selection
   Standard_EXPORT bool isIntersectBoundary(const gp_Pnt& thePnt1, const gp_Pnt& thePnt2) const;
